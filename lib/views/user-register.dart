@@ -9,20 +9,26 @@ class UserRegisterPage extends StatelessWidget {
   String email = '';
   String password = '';
 
-  void register() async {
-    try {
-      await auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      print('Erro falha no código: ${e.code}');
-      print(e.message);
-    }
-  }
-
   final _formKey = GlobalKey<FormState>();
 
-  void _submitForm() {
-    if (formKey.currentState!.validate()) {}
+  void register(BuildContext context) async {
+    if (formKey.currentState!.validate()) {
+      formKey.currentState!.save();
+      try {
+        await auth.createUserWithEmailAndPassword(
+            email: email, password: password);
+
+        Navigator.of(context).pushNamed('/task-list');
+      } catch (e) {
+        print(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "Não foi possível criar uma conta. Por favor, tente novamente mais tarde."),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -67,9 +73,7 @@ class UserRegisterPage extends StatelessWidget {
               const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.of(context).pushNamed('/task-list');
-                  }
+                  register(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
