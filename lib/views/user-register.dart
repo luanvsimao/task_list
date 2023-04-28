@@ -78,7 +78,7 @@ class UserRegisterPage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                 ),
-                child: Text("Entrar"),
+                child: Text("Registar"),
               ),
             ],
           ),

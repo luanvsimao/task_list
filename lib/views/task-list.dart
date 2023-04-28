@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -6,6 +7,7 @@ class TaskList extends StatelessWidget {
   var image = const AssetImage("assets/images/travis.jpg");
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  FirebaseAuth auth = FirebaseAuth.instance;
 
   // Atualizar a tarefa
   void update(String id, bool value) {
@@ -30,7 +32,7 @@ class TaskList extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('tasks')
-              // .where('status', isEqualTo: false)
+              .where('uid', isEqualTo: auth.currentUser!.uid)
               .orderBy('name')
               .snapshots(),
           builder: (context, snapshot) {

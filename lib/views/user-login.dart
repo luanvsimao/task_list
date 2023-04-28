@@ -1,15 +1,35 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserLoginPage extends StatelessWidget {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  FirebaseAuth auth = FirebaseAuth.instance;
 
   String email = '';
   String password = '';
 
   final _formKey = GlobalKey<FormState>();
 
-  void _submitForm() {
-    if (formKey.currentState!.validate()) {}
+  void login(BuildContext context) async {
+    if (formKey.currentState!.validate()) {
+      formKey.currentState!.save();
+      try {
+        await auth.signInWithEmailAndPassword(email: email, password: password);
+
+        Navigator.of(context).pushNamed('/task-list');
+      } catch (e) {
+        print(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "Não foi possível criar uma conta. Por favor, tente novamente mais tarde."),
+          ),
+        );
+      }
+    }
   }
 
   @override
