@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,6 +8,9 @@ class TaskCreatePage extends StatelessWidget {
 
   String name = '';
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+  final prioridades = ['Alta', 'Média', 'Baixa'];
 
   // Salvar a tarefa
   void SaveTask(BuildContext context) {
@@ -16,6 +20,7 @@ class TaskCreatePage extends StatelessWidget {
       firestore.collection('tasks').add({
         'name': name,
         'finished': false,
+        'uid': FirebaseAuth.instance.currentUser!.uid,
       });
       Navigator.of(context).pop();
     }
@@ -51,31 +56,22 @@ class TaskCreatePage extends StatelessWidget {
               ),
             ),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               child: DropdownButtonFormField(
-                decoration: const InputDecoration(
-                  hintText: "Selecione a prioridade",
+                decoration: InputDecoration(
+                  labelText: "Prioridade",
+                  border: OutlineInputBorder(),
                 ),
-                // ignore: prefer_const_literals_to_create_immutables
-                items: [
-                  const DropdownMenuItem(
-                    value: 1,
-                    child: Text('Baixa'),
-                  ),
-                  const DropdownMenuItem(
-                    child: Text('Média'),
-                    value: 2,
-                  ),
-                  const DropdownMenuItem(
-                    value: 3,
-                    child: Text('Alta'),
-                  ),
-                ],
+                items: prioridades.map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
                 onChanged: (value) {},
-                onSaved: (newValue) {},
                 validator: (value) {
                   if (value == null) {
-                    return 'Por favor, selecione uma categoria';
+                    return "Campo obrigatório";
                   }
                   return null;
                 },

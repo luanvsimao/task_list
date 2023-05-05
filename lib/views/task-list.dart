@@ -27,46 +27,54 @@ class TaskList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tarefas Pendentes'),
+        title: const Text('Tasks'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await auth.signOut();
+              Navigator.of(context).pushNamed('/user-login');
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('tasks')
-              .where('uid', isEqualTo: auth.currentUser!.uid)
-              .orderBy('name')
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            var tasks = snapshot.data!.docs;
-            return ListView(
-              children: tasks
-                  .map((task) => Dismissible(
-                        key: Key(task.id),
-                        onDismissed: (direction) => delete(task.id),
-                        background: Container(
-                          color: Colors.red,
-                          child: const ListTile(
-                            leading: Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        child: CheckboxListTile(
-                          title: Text(task['name']),
-                          onChanged: (value) => update(task.id, value!),
-                          value: task['finished'],
-                        ),
-                      ))
-                  .toList(),
+        stream: firestore
+            .collection('tasks')
+            .where('uid', isEqualTo: auth.currentUser!.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
             );
-          }),
+          }
+
+          var tasks = snapshot.data!.docs;
+          return ListView(
+            children: tasks
+                .map((task) => Dismissible(
+                      key: Key(task.id),
+                      onDismissed: (_) => delete(task.id),
+                      background: Container(
+                        color: Colors.red,
+                        child: const Icon(Icons.delete),
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 12),
+                      ),
+                      child: CheckboxListTile(
+                        title: Text(task['name']),
+                        onChanged: (value) => update(task.id, value!),
+                        value: task['finished'],
+                      ),
+                    ))
+                .toList(),
+          );
+        },
+      ),
+      // ignore: prefer_const_constructors
       floatingActionButton: FloatingActionButton(
-        onPressed: () => handleViewCretaTask(context),
+        onPressed: () => Navigator.of(context).pushNamed('/task-create'),
         child: const Icon(Icons.add),
       ),
     );

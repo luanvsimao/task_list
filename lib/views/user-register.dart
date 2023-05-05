@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class UserRegisterPage extends StatelessWidget {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -20,13 +21,11 @@ class UserRegisterPage extends StatelessWidget {
 
         Navigator.of(context).pushNamed('/task-list');
       } catch (e) {
-        print(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "Não foi possível criar uma conta. Por favor, tente novamente mais tarde."),
-          ),
-        );
+        if (e is FirebaseAuthException) {
+          Fluttertoast.showToast(msg: e.message!);
+        } else {
+          Fluttertoast.showToast(msg: 'Erro ao registrar');
+        }
       }
     }
   }

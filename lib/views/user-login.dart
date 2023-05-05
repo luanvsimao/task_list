@@ -1,33 +1,35 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import 'package:flutter/material.dart';
 
 class UserLoginPage extends StatelessWidget {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
-  FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseAuth firestore = FirebaseAuth.instance;
 
   String email = '';
   String password = '';
 
-  final _formKey = GlobalKey<FormState>();
-
-  void login(BuildContext context) async {
+  void Login(BuildContext context) async {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
       try {
-        await auth.signInWithEmailAndPassword(email: email, password: password);
-
+        await firestore.signInWithEmailAndPassword(
+            email: email, password: password);
+        Fluttertoast.showToast(msg: 'Login realizado com sucesso');
         Navigator.of(context).pushNamed('/task-list');
       } catch (e) {
-        print(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "Não foi possível criar uma conta. Por favor, tente novamente mais tarde."),
-          ),
-        );
+        if (e is FirebaseAuthException) {
+          if (e.code == 'user-not-found') {
+            Fluttertoast.showToast(msg: 'Email não encontrado');
+          } else if (e.code == 'wrong-password') {
+            Fluttertoast.showToast(msg: 'Senha incorreta');
+          } else {
+            Fluttertoast.showToast(msg: 'Erro de autenticação');
+          }
+        } else {
+          Fluttertoast.showToast(msg: 'Erro ao autenticar');
+        }
       }
     }
   }
@@ -35,6 +37,9 @@ class UserLoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -44,8 +49,8 @@ class UserLoginPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'E-mail',
+                decoration: InputDecoration(
+                  labelText: 'Email',
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -65,7 +70,7 @@ class UserLoginPage extends StatelessWidget {
               const SizedBox(height: 16.0),
               TextFormField(
                   decoration: const InputDecoration(
-                    labelText: 'Senha',
+                    labelText: 'Password',
                   ),
                   obscureText: true,
                   onSaved: (value) => {password = value!},
@@ -73,21 +78,15 @@ class UserLoginPage extends StatelessWidget {
                       value!.isEmpty ? 'Senha invalida' : null),
               const SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.of(context).pushNamed('/task-list');
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                ),
-                child: Text("Entrar"),
+                onPressed: () => Login(context),
+                child: const Text('Entrar'),
               ),
+              const SizedBox(height: 16.0),
               TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed('/user-register');
-                  },
-                  child: Text("Cadastrar")),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed('/user-register'),
+                child: const Text('Registrar'),
+              ),
             ],
           ),
         ),
